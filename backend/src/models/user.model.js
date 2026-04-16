@@ -12,6 +12,12 @@ const userSchema = new Schema(
         password:{
             type:String,
             required: true
+        },
+        refreshToken: {
+            type: String
+        },
+        accessToken:{
+            type: String
         }
     },{
         timestamps: true
@@ -25,15 +31,14 @@ userSchema.pre('save',async function(){
 
 userSchema.methods.isPasswordCorrect = async function
 (password){
-    return await bcrypt.compare(this.password, password)
+    return await bcrypt.compare(password, this.password)
 }
 
 userSchema.methods.generateAccessToken = function(){
     return jwt.sign(
         {
             _id : this._id,
-            email: this.email,
-            password: this.password
+            email: this.email
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
@@ -42,14 +47,14 @@ userSchema.methods.generateAccessToken = function(){
     )
 }
 
-userSchema.methods.generateRefresgToken = function(){
+userSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
         {
             _id: this._id
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn:process.env.REFRESH_TOKEN_EXPIRY
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         }
     )
 }
