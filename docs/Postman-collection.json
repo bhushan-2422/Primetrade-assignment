@@ -1,0 +1,157 @@
+{
+  "info": {
+    "name": "Task Manager API",
+    "description": "API collection for Task Manager app. Base URL: http://localhost:8000/api/v1/user\n\nSet the `base_url` and `token` variables before use.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api/v1/user",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT token — paste here after login"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/signUp", "host": ["{{base_url}}"], "path": ["signUp"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"yourpassword\"\n}"
+            },
+            "description": "Register a new user with email and password."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) {",
+                  "  pm.collectionVariables.set('token', res.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"yourpassword\"\n}"
+            },
+            "description": "Login and receive a JWT. The test script auto-saves the token to the `token` variable."
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/getCurrentUser", "host": ["{{base_url}}"], "path": ["getCurrentUser"] },
+            "description": "Returns the currently authenticated user's details."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/logout", "host": ["{{base_url}}"], "path": ["logout"] },
+            "description": "Logs out the current user (invalidates session/cookie server-side)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Get All Tasks",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/getAllTask", "host": ["{{base_url}}"], "path": ["getAllTask"] },
+            "description": "Fetch all tasks belonging to the authenticated user."
+          }
+        },
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/createTask", "host": ["{{base_url}}"], "path": ["createTask"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Buy groceries\",\n  \"description\": \"Milk, eggs, bread\"\n}"
+            },
+            "description": "Create a new task. Adjust body fields to match your Task model."
+          }
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/deleteTask", "host": ["{{base_url}}"], "path": ["deleteTask"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"taskId\": \"<task_id_here>\"\n}"
+            },
+            "description": "Delete a task by its ID."
+          }
+        },
+        {
+          "name": "Toggle Task Completion",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/markAsComplete", "host": ["{{base_url}}"], "path": ["markAsComplete"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"taskId\": \"<task_id_here>\"\n}"
+            },
+            "description": "Toggle the completion status of a task."
+          }
+        }
+      ]
+    }
+  ]
+}
