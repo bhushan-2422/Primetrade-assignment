@@ -2,6 +2,9 @@ import mongoose, { Schema } from "mongoose";
 
 const taskSchema = new Schema(
     {
+        userId:{
+            type: String
+        },
         title:{
             type: String,
             required: true

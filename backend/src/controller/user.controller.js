@@ -1,3 +1,4 @@
+import { Task } from "../models/task.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -5,16 +6,19 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const generateRefreshTokenAndAccessToken = async (userId) => {
   try {
-    console.log(userId)
+    console.log(userId);
     const user = await User.findById(userId);
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
     return { refreshToken, accessToken };
-
   } catch (e) {
-    throw new ApiError(500, "something went wrong while generating tokens: ",e);
+    throw new ApiError(
+      500,
+      "something went wrong while generating tokens: ",
+      e,
+    );
   }
 };
 
@@ -39,7 +43,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  console.log(email+" "+password)
+  console.log(email + " " + password);
   if (!email || !password)
     throw new ApiError(400, "email and password are required");
 
@@ -47,7 +51,7 @@ const loginUser = asyncHandler(async (req, res) => {
   if (!user) throw new ApiError(400, "user does not exist");
 
   const isPasswordValid = await user.isPasswordCorrect(password);
-  if (!isPasswordValid){
+  if (!isPasswordValid) {
     throw new ApiError(401, "invalid user credentials");
   }
 
@@ -74,12 +78,12 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
-const getCurrentUser = asyncHandler(async (req,res)=>{
-    const {user} = req.user
-    return res
+const getCurrentUser = asyncHandler(async (req, res) => {
+  const { user } = req.user;
+  return res
     .status(200)
-    .json(new ApiResponse(200,req.user,"current user is fetched"))
-})
+    .json(new ApiResponse(200, req.user, "current user is fetched"));
+});
 
 const logoutUser = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndUpdate(
@@ -89,7 +93,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     },
     {
       new: true,
-    }
+    },
   );
 
   const options = {
@@ -104,4 +108,67 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "user logged out"));
 });
 
-export { registerUser, loginUser, getCurrentUser, logoutUser};
+const createTask = asyncHandler(async (req, res) => {
+  const { title, description } = req.body;
+  const user = req.user;
+  if (!user) throw new ApiError(400, "user is not logged in");
+  const task = await Task.create({
+    userId: user._id,
+    title,
+    description,
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, task, "task is generated succesfully..."));
+});
+
+const deleteTask = asyncHandler(async (req, res) => {
+  const { taskId } = req.body;
+  const task = await Task.findByIdAndDelete(taskId);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "task deleted succesfully..."));
+});
+
+const completionToggle = asyncHandler(async (req, res) => {
+  const { taskId } = req.body;
+  if (!taskId) {
+  throw new ApiError(400, "Task ID is required");
+}
+  const task = await Task.findByIdAndUpdate(taskId, [
+    {
+      $set: {
+        completed: { $not: "$completed" },
+      },
+    },
+  ]);
+
+  task.completed = !task.completed
+
+  return res
+  .status(200)
+  .json(new ApiResponse(200, task, "complete toggele done"))
+});
+
+const getAllTask = asyncHandler(async (req, res)=>{
+    const tasks = await Task.find({userId: req.user?._id});
+    if(!tasks){
+        throw new ApiError(400,"no task are created by user")
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200,tasks,"all tasks are fetched..."))
+})
+export {
+  registerUser,
+  loginUser,
+  getCurrentUser,
+  logoutUser,
+  createTask,
+  deleteTask,
+  completionToggle,
+  getAllTask
+};
