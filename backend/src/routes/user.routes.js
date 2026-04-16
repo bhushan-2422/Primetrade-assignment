@@ -6,11 +6,10 @@ const router = Router()
 
 router.route("/signUp").post(registerUser)
 router.route("/login").post(loginUser)
-
 router.route("/getCurrentUser").post(verifyJWT, getCurrentUser)
 router.route('/logout').post(verifyJWT, logoutUser)
-router.route("/createTask").post(verifyJWT, createTask)
 
+router.route("/createTask").post(verifyJWT, createTask)
 router.route("/deleteTask").post(verifyJWT, deleteTask)
 router.route("/getAllTask").post(verifyJWT, getAllTask)
 router.route("/markAsComplete").post(verifyJWT, completionToggle)
